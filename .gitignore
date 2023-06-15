@@ -1,0 +1,7 @@
+# pycache files
+__pycache__/
+# vscode configurations
+.vscode
+# build files
+.buildozer
+bin
