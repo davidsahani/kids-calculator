@@ -67,7 +67,7 @@ class TextField(ScrollView):
             self._max_text_size_for_label_width = max_text
         if self.label.halign == 'left':
             return max_text  # for division
-        return max_text + max_text * 0.4
+        return max_text + int(max_text * 0.4)
 
     @property
     def text(self) -> str:
