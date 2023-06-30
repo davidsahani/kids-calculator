@@ -322,9 +322,10 @@ def true_div(dividend: mnum, divisor: mnum, precision: int) -> Tuple[str, List[m
         minus_terms.append(minus_term)
         remainders.append(remainder)
 
-    # if didn't reach exact division
-    if remainder != 0:
+    if remainder != 0:  # if didn't reach exact division
         quotient.append('.' if quotient else '0.')
+    elif dividend == 0:  # special case: return skipped steps
+        return '0', [mnum(0)], [mnum(0)], [mnum(0)]
 
     for _ in range(precision):
         if remainder == 0:

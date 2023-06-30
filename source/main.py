@@ -4,12 +4,12 @@ os.environ["KIVY_NO_FILELOG"] = "1"  # noqa
 os.environ["KIVY_NO_CONSOLELOG"] = "1"  # noqa
 
 from kivy.metrics import sp
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
+from kivymd.app import MDApp
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDFloatingActionButton
-from kivymd.app import MDApp
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.boxlayout import BoxLayout
-from kivy.core.window import Window
 from display_text import DisplayText
 from typing import Tuple, List, Optional
 

@@ -42,13 +42,14 @@ def build_project() -> int:
 
 
 def main() -> None:
+    import sys
 
     os.chdir(PROJECT_DIR)
 
     # build the project
     status = build_project()
     if status != 0:
-        print("Pyinstaller failed to build the project")
+        print("Pyinstaller failed to build the project", file=sys.stderr)
 
 
 if __name__ == '__main__':

@@ -252,7 +252,7 @@ class DisplayText:
                 {space}Step 2: Perform division
                 """
             itext = '\n'.join([line.strip(' ') for line in itext.split('\n')])
-            self.text_field.set_text(f"[size={font_size -10}]{itext}[/size]\n")
+            self.text_field.set_text(f"[size={font_size -14}]{itext}[/size]\n")
 
         if self.operator == '/':
             max_text = self.text_field.max_text_size - 6
@@ -268,7 +268,7 @@ class DisplayText:
 
         def insert(text: str) -> None:
             self.text_field.insert(
-                f"\n[size={font_size -10}] {text}[/size]"
+                f"\n[size={font_size -12}] {text}[/size]"
             )
         sign = (num_x < 0) + (num_y < 0)
         quotient, *_, remainders = result
