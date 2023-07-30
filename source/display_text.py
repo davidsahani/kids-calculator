@@ -190,8 +190,8 @@ class DisplayText:
             result, products, carries = mul(num_x, num_y)
             # filter carries with non-zeros
             filtered_carries = f'{space}\n'.join(
-                char for char in reversed(carries)
-                if not all(char in '.0' for char in char)
+                p_carries for p_carries in reversed(carries)
+                if not all(char in '.0' for char in p_carries)
             )
             self.text_field.set_ctext(filtered_carries.replace(
                 '0', space).replace('.', space) + space + '\n'
@@ -318,7 +318,7 @@ class DisplayText:
         def append(text: str) -> None:
             division_steps.append(f"\n[size={font_size -1}]{text}[/size]")
 
-        # show division steps
+        # append the division steps
         for term_minus, minus_term, remainder in zip(term_minuses, minus_terms, remainders):
             term_minus_str = str(term_minus)
             minus_term_str = str(abs(minus_term))

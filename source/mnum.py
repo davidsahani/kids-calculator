@@ -131,9 +131,6 @@ class mnum:
         return value.__number if isinstance(
             value, self.__class__) else value  # type: ignore
 
-    def div(self, value: _Number) -> 'mnum':
-        return self.__class__(self.__number // self.__cast(value))
-
     def __len__(self) -> int:
         return len(self.__number.as_tuple().digits)
 
@@ -226,8 +223,20 @@ class mnum:
 
     def __iter__(self) -> Iterator['mnum']:
         decimal_tuple = self.__number.as_tuple()
-        for digit in decimal_tuple.digits:
-            yield self.__class__((decimal_tuple.sign, (digit,), 0))
+        return (
+            self.__class__((decimal_tuple.sign, (digit,), 0))
+            for digit in decimal_tuple.digits
+        )
+
+    def __reversed__(self) -> Iterator['mnum']:
+        decimal_tuple = self.__number.as_tuple()
+        digits = decimal_tuple.digits
+        yield from (
+            self.__class__((decimal_tuple.sign, (digit,), 0))
+            for digit in reversed(digits)
+        )
+        if len(digits) == abs(int(decimal_tuple.exponent)):
+            yield self.__class__((decimal_tuple.sign, (0,), 0))
 
     def float_str(self) -> str:
         num_str = str(self.__number)
