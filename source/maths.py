@@ -42,6 +42,9 @@ def _add(augend: mnum, addend: mnum) -> Tuple[str, str]:
     if carry == 1:  # if there's a carry
         int_result.appendleft(mnum(carry))
 
+    if not int_result:  # if empty
+        int_result.appendleft(mnum(0))
+
     result = ''.join(map(str, int_result)) + (
         '.' + ''.join(map(str, frac_result)) if frac_result else ''
     )
@@ -84,6 +87,10 @@ def _sub(minuend: mnum, subtrahend: mnum, rev_sub: bool) -> Tuple[str, str]:
         int_result.appendleft(res)
 
     assert borrow == 0, "Borrow must be zero"
+
+    if not int_result:  # if empty
+        int_result.appendleft(mnum(0))
+
     result = ''.join(map(str, int_result)) + (
         '.' + ''.join(map(str, frac_result)) if frac_result else ''
     )
