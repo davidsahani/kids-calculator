@@ -26,7 +26,6 @@ These images showcase the intuitive interface and the comprehensive display of c
 Kids-Calculator is currently available for the following platforms:
 
 - Android
-- Linux
 - Windows
 
 ### Release Builds
@@ -37,9 +36,6 @@ When it comes to the release builds, here's what you need to know:
   - For new arm-based Android devices, we recommend downloading the version ending with `*arm64-v8a.apk.`
   - If the above version is not compatible with your device (indicating a non-arm64 architecture), please use the version ending with `*armeabi-v7a.apk.`
   - Note: If you have a device with a different architecture, building the project yourself is required, as it is not officially supported for testing reasons.
-
-- Linux:
-  - The zip file ending with `*debian.zip` is specifically complied for Debian-based Linux distributions.
 
 - Windows:
   - For Windows, simply download the zip file ending with `*windows.zip.`
