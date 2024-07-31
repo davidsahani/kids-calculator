@@ -1,7 +1,9 @@
-# pycache files
+# cache files
 __pycache__/
+.pytest_cache
 # vscode configurations
 .vscode
 # build files
 .buildozer
 bin
+build

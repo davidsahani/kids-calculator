@@ -1,17 +1,11 @@
-import os  # noqa
-# disable kivy logger, enable for debugging
-os.environ["KIVY_NO_FILELOG"] = "1"  # noqa
-os.environ["KIVY_NO_CONSOLELOG"] = "1"  # noqa
-
+from display_text import DisplayText
+from kivy.core.window import Window
 from kivy.metrics import sp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
-from kivy.core.window import Window
 from kivymd.app import MDApp
-from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDFloatingActionButton
-from display_text import DisplayText
-from typing import Tuple, List, Optional
+from kivymd.uix.label import MDLabel
 
 
 class TextField(ScrollView):
@@ -26,16 +20,16 @@ class TextField(ScrollView):
             size_hint=(2, None),
         )
         self.add_widget(self.label)
-        self.label.font_size = int(sp(30))
+        self.label.font_size = int(sp(25))
         self.label.font_name = "fonts/FiraCode-Retina"
         self.label.bind(texture_size=self._adjust_label_height)
         self._max_text_size_for_label_width = 0
 
-    def _adjust_label_height(self, instance: MDLabel, size: Tuple[int, int]) -> None:
+    def _adjust_label_height(self, instance: MDLabel, size: tuple[int, int]) -> None:
         self.label.height = size[1]
         self._max_text_size_for_label_width = self._eval_max_text_size()
 
-    def on_scroll_stop(self, touch, check_children=True) -> Optional[bool]:
+    def on_scroll_stop(self, touch, check_children: bool = True) -> bool | None:
         """Hide scrollbar when reached end otherwise show scrollbar"""
         if self.label.halign == 'left':
             self.bar_width = '0dp' if self.scroll_x < 0.02 else '2dp'
@@ -76,14 +70,14 @@ class TextField(ScrollView):
     def insert(self, text: str) -> None:
         """Insert text into label, replace spaces with non-breaking spaces
 
-        Note: no next line is added.
+        Note: No next line is added.
         """
         self.label.text += text.replace(' ', '\u00A0')
 
     def set_text(self, text: str) -> None:
         """Set text into label, replace spaces with non-breaking spaces
 
-        Note: line height and scrollbar is adjusted.
+        Note: Line height and scrollbar is adjusted.
         """
         self.label.text = text.replace(' ', '\u00A0')
         self._adjust_line_height_and_scrollbar()
@@ -91,7 +85,7 @@ class TextField(ScrollView):
     def set_ctext(self, text: str) -> None:
         """Set colored formatted text into the label
 
-        Note: spaces aren't replaced with non-breaking spaces.
+        Note: Spaces aren't replaced with non-breaking spaces.
         """
         font_size = self.label.font_size - 10  # colored text font size
         spacing_font_size = self.label.font_size - font_size
@@ -102,15 +96,15 @@ class TextField(ScrollView):
 class NumPad(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._app: 'CalculatorApp' = MDApp.get_running_app()
-        Window.bind(on_key_down=self._on_keyboard_down)
+        self._app: 'CalculatorApp' = MDApp.get_running_app()  # type: ignore
+        Window.bind(on_key_down=self._on_key_down)
         self.operators = {
             43: '+', 45: '-', 42: '*', 47: '/', 37: '%',
             270: '+', 269: '-', 268: '*', 267: '/'  # numpad
         }
 
-    def _on_keyboard_down(self, window, keycode: int, param: int,
-                          text: Optional[str], modifiers: List[str]) -> bool:
+    def _on_key_down(self, window, keycode: int, param: int,
+                     text: str | None, modifiers: list[str]) -> bool:
 
         if 'shift' in modifiers:  # shift pressed
             if keycode == 61:  # + key
@@ -141,7 +135,7 @@ class NumPad(BoxLayout):
             self._app.insert_sign('+')
         elif keycode == 45:  # - key
             self._app.insert_sign('-')
-        elif self.operators.get(keycode):  # operators
+        elif keycode in self.operators:  # operators
             self._app.insert_operator(self.operators[keycode])
         return True
 
@@ -183,16 +177,17 @@ class Screen(BoxLayout):
 
 
 class CalculatorApp(MDApp, DisplayText):
-    def build(self) -> Screen:
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.load_kv("numpad.kv")
         self.screen = Screen()
+        self.text_field = self.screen.text_field
+
+    def build(self) -> Screen:
         return self.screen
 
-    @property
-    def text_field(self) -> TextField:
-        return self.screen.text_field
-
     def calculate(self) -> None:
-        DisplayText.show_calculation(self)
+        self.show_calculation()
 
         label_height = self.text_field.height
         font_size = self.text_field.label.font_size
@@ -206,9 +201,8 @@ class CalculatorApp(MDApp, DisplayText):
 if __name__ == '__main__':
     from kivy.utils import platform
     app = CalculatorApp()
-    app.title = "Kids Calculator"
-    app.load_kv("numpad.kv")
     if platform not in ['android', 'ios']:
-        Window.size = (380, 620)
+        app.title = "Kids Calculator"
         app.icon = "icons/calculator.png"
+        Window.size = (380, 620)
     app.run()

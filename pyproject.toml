@@ -1,0 +1,28 @@
+[tool.pyright]
+pythonVersion = "3.10"
+typeCheckingMode = "strict"
+exclude = ["**/build", "**/__pycache__"]
+
+reportShadowedImports = true
+reportImplicitStringConcatenation = "information"
+
+[[tool.pyright.executionEnvironments]]
+root = "source/main.py"
+extraPaths = ["source"]
+reportMissingTypeStubs = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+reportMissingParameterType = false
+
+[[tool.pyright.executionEnvironments]]
+root = "source/delayed_button.py"
+reportReturnType = false
+reportMissingTypeStubs = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownMemberType = false
+reportMissingParameterType = false
+reportIncompatibleMethodOverride = false

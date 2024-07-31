@@ -1,9 +1,9 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from main import TextField
 
-from maths import add, div, mul, sub, true_div, mnum
+from maths import add, div, mnum, mul, sub, true_div
 
 
 class DisplayText:
@@ -45,28 +45,24 @@ class DisplayText:
         self._update_text()
 
     def insert_sign(self, sign: str) -> None:
-        def get_sign(operand: str) -> str:
-            if operand and operand[0] in '+-':
-                return '+-'[operand[0] == '+'] + operand[1:]
+        def change_sign(operand: str) -> str:
+            is_sign_neg = operand[0] == '-' \
+                if operand else False
+
+            if (
+                sign == '-' and is_sign_neg or
+                sign == '+' and not is_sign_neg
+            ):
+                return operand
+            elif is_sign_neg:
+                return operand[1:]
             else:
                 return '-' + operand
 
-        if sign == '+' or sign == '-':
-            if not self.operator and self.left_operand:
-                if self.left_operand[0] in '+-':
-                    self.left_operand = sign + self.left_operand[1:]
-                else:
-                    self.left_operand = sign + self.left_operand
-            elif self.operator and self.right_operand:
-                if self.right_operand[0] in '+-':
-                    self.right_operand = sign + self.right_operand[1:]
-                else:
-                    self.right_operand = sign + self.right_operand
+        if not self.operator:
+            self.left_operand = change_sign(self.left_operand)
         else:
-            if not self.operator:
-                self.left_operand = get_sign(self.left_operand)
-            else:
-                self.right_operand = get_sign(self.right_operand)
+            self.right_operand = change_sign(self.right_operand)
 
         self._update_text()
 
@@ -82,7 +78,7 @@ class DisplayText:
                 if self.left_operand_has_dot:
                     return
                 if not self.left_operand:
-                    self.left_operand += '0'
+                    self.left_operand = '0'
                 self.left_operand_has_dot = True
 
             self.left_operand += number
@@ -105,7 +101,7 @@ class DisplayText:
             if self.right_operand_has_dot:
                 return
             if not self.right_operand:
-                self.right_operand += '0'
+                self.right_operand = '0'
             self.right_operand_has_dot = True
 
         self.right_operand += number
@@ -122,12 +118,10 @@ class DisplayText:
 
         if not self.operator or self.operator not in '/%':
             self.text_field.label.halign = 'right'
-            padding = '\u00A0'
             self.text_field.set_text(
-                '\n' + self.left_operand + padding +
+                '\n' + self.left_operand + ' ' +
                 '\n' + self.symbols[self.operator] + ' ' +
-                self.right_operand.rjust(len(self.left_operand))
-                + padding
+                self.right_operand.rjust(len(self.left_operand)) + ' '
             )
             return
         self.text_field.label.halign = 'left'
@@ -144,7 +138,9 @@ class DisplayText:
             return
         if self.right_operand[-1] == '.':
             self.right_operand = self.right_operand[:-1]
+            self.right_operand_has_dot = False
             self._update_text()
+
         self.calculation_done = True
 
         prev_text = self.text_field.text
@@ -155,17 +151,17 @@ class DisplayText:
         num_y = mnum(self.right_operand)
 
         if self.operator in '+-':
-            result, carries = add(num_x, num_y) if \
-                self.operator == '+' else sub(num_x, num_y)
+            index = self.operator == '-'  # (+, -) => (0, 1)
+            result, carries = (add, sub)[index](num_x, num_y)
 
             # if not all carries are zero
             if any(char == '1' for char in carries):
                 self.text_field.set_ctext(
-                    carries.replace('0', space).replace(
-                        '.', space) + space
+                    carries.replace('0', space).
+                    replace('.', space) + space
                 )
-            # if all operands don't have fractional part
-            if not (num_x.frac_len() or num_y.frac_len()):
+            # if both operands do not have fractional part
+            if num_x.frac_len() == 0 and num_y.frac_len() == 0:
                 self.text_field.insert(prev_text)
             else:
                 def zfill(number: str, n_zeros: int) -> str:
@@ -178,12 +174,12 @@ class DisplayText:
                             (num_y.frac_len() or 1))
 
                 self.text_field.insert(
-                    '\n' + opl + space + '\n' +
+                    '\n' + opl + ' ' + '\n' +
                     self.symbols[self.operator] +
-                    ' ' + opr.rjust(len(opl)) + space
+                    ' ' + opr.rjust(len(opl)) + ' '
                 )
             self.text_field.insert(
-                '\n' + '―' * len(result) + ' \n' + result + space)
+                '\n' + '―' * len(result) + ' \n' + result + ' ')
             return
 
         if self.operator == '*':
@@ -197,24 +193,23 @@ class DisplayText:
                 '0', space).replace('.', space) + space + '\n'
             )
             self.text_field.insert(prev_text.lstrip('\n') + '\n')
+            bar_and_result = '―' * len(result) + ' \n' + result + ' '
             if len(num_y) == 1:  # if multiplier is of size 1
-                self.text_field.insert('―' * len(result) + ' \n')
-                self.text_field.insert(result + space)
+                self.text_field.insert(bar_and_result)
                 return
             self.text_field.insert('―' * max(
                 len(self.left_operand), len(self.right_operand)) + ' \n'
             )
             for partial_products in products:
                 self.text_field.insert(partial_products + ' \n')
-            self.text_field.insert(
-                '―' * len(result) + ' \n' + result + space)
+            self.text_field.insert(bar_and_result)
             return
 
         font_size = self.text_field.label.font_size
         if num_y == 0:
             msg = 'division by zero is not allowed.'
-            self.text_field.set_text(prev_text)
-            self.text_field.insert(
+            self.text_field.set_text(
+                prev_text +
                 f"\n\n\n[size={font_size -10}] [b]{msg}[/b][/size]"
             )
             return
@@ -222,9 +217,9 @@ class DisplayText:
         dividend, divisor = num_x, num_y
         dividend_frac_len = dividend.frac_len()
         divisor_frac_len = divisor.frac_len()
-        has_no_frac_parts = dividend_frac_len == 0 and divisor_frac_len == 0
+        has_frac_parts = dividend_frac_len != 0 or divisor_frac_len != 0
 
-        if not has_no_frac_parts:
+        if has_frac_parts:
             # normalize the dividend and divisor
             dividend = dividend.as_int() if dividend_frac_len == 0 else \
                 dividend.as_int().add(dividend.frac_part())
@@ -238,28 +233,24 @@ class DisplayText:
                 for _ in range(dividend_frac_len - divisor_frac_len):
                     divisor.join(0)
 
-            if len(self.left_operand) + len(self.right_operand) < 20:
-                normalization_step = f"{self.left_operand} / {self.right_operand} => {dividend} / {divisor}"
-            else:
-                normalization_step = f"{self.left_operand} / {self.right_operand} \
-                                    \n\n{space}=> {dividend} / {divisor}"
-            itext = \
-                f"""\
-                {space}Step 1: Normalize denominator and nominator
+            next_line = '' if len(self.left_operand) + \
+                len(self.right_operand) < 20 else '\n\n'
 
-                {space}{normalization_step}
-
-                {space}Step 2: Perform division
-                """
-            itext = '\n'.join([line.strip(' ') for line in itext.split('\n')])
-            self.text_field.set_text(f"[size={font_size -14}]{itext}[/size]\n")
+            steps = (
+                " Step 1: Normalize denominator and nominator",
+                f" {self.left_operand} / {self.right_operand}" +
+                f"{next_line} => {dividend} / {divisor}",
+                " Step 2: Perform division"
+            )
+            text = '\n\n'.join(steps) + '\n'
+            self.text_field.set_text(f"[size={font_size -12}]{text}[/size]\n")
 
         if self.operator == '/':
             max_text = self.text_field.max_text_size - 6
             opr_len = len(self.right_operand)
-            precision = (max_text * 2) - opr_len
+            precision = max((max_text * 2) - opr_len, max_text)
 
-            result = true_div(dividend, divisor, max(precision, max_text))
+            result = true_div(dividend, divisor, precision)
             self._show_division(dividend, divisor, *result)
             return
 
@@ -268,34 +259,24 @@ class DisplayText:
 
         def insert(text: str) -> None:
             self.text_field.insert(
-                f"\n[size={font_size -12}] {text}[/size]"
+                f"\n[size={font_size -10}] {text}[/size]"
             )
         sign = (num_x < 0) + (num_y < 0)
         quotient, *_, remainders = result
 
         # sign == 1 means any -ve, thus sign != 1 means both +ve or -ve
-        if (sign != 1 or remainders[-1] == 0) and has_no_frac_parts:
+        if (sign != 1 or remainders[-1] == 0) and not has_frac_parts:
             insert(f"\n Remainder is: {remainders[-1]}")
             return
 
         quot = mnum(quotient)
-        if not has_no_frac_parts:
-            rem = num_x - num_y * quot
-            insert("\n\n Using formula: r = n - pq")
-            insert(f"r = {num_x} - {abs(quot)} x {num_y} => {rem}")
-            insert(f"Thus, remainder is: {num_x - num_y * quot}")
-        else:
-            quot -= 1  # round to nearest integer
-            rem = num_x - num_y * quot
-            insert("\n\n Using formula: r = n - pq")
-            insert("rounding quotient towards negative")
-            insert("infinity to satisfy the formula")
-            insert(f"∴ q = {quotient} - 1 => {quot}")
-            insert(f"r = {num_x} + {abs(quot)} x {num_y} => {rem}")
-            insert(f"Thus, remainder is: {num_x - num_y * quot}")
+        rem = num_x - num_y * quot
+        insert("\n\n Using formula: r = n - pq")
+        insert(f"r = {num_x} - ({num_y} x {quot}) => {rem}")
+        insert(f"Thus remainder is: {rem}")
 
     def _show_division(self, dividend: mnum, divisor: mnum, quotient: str,
-                       term_minuses: List[mnum], minus_terms: List[mnum], remainders: List[mnum]) -> None:
+                       term_minuses: list[mnum], minus_terms: list[mnum], remainders: list[mnum]) -> None:
 
         divisor_str = str(divisor)
         dividend_str = str(dividend)
@@ -313,7 +294,7 @@ class DisplayText:
         spacing = ' ' * (divisor_len + 3 + (1 if dividend < 0 else 0))
         font_size = self.text_field.label.font_size
 
-        division_steps: List[str] = []
+        division_steps: list[str] = []
 
         def append(text: str) -> None:
             division_steps.append(f"\n[size={font_size -1}]{text}[/size]")

@@ -94,36 +94,32 @@ cd ~/Documents/GitHub/kids-calculator
 Start the build process by running the following command:
 
 - To build the app in debug mode, use the following command:
- 
-    ```bash
-    buildozer android debug
-    ```
+   ```bash
+   buildozer android debug
+   ```
 
 - To build the app in release mode, use the following command:
+   ```bash
+   buildozer android release
+   ```
 
-    ```bash
-    buildozer android release
-    ```
 
+## Building the Executable
 
-## Building for Linux and Windows
-
-To successfully build your project for Linux and Windows operating systems, follow the steps below:
+Follow the steps below to build application executable:
 
 1. Ensure that all project requirements are installed.
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 2. Install `pyinstaller` by executing the following command:
    ```bash
    pip install pyinstaller
    ```
-
-**For Linux users:**
-
-3. Open a terminal and navigate to project directory.
-
-4. Run the following command to build the project for Linux:
+   Alternatively install
    ```bash
-   python build-win-linux.py
+   pip install pyinstaller==5.13.0
    ```
 
 **For Windows users:**
@@ -137,11 +133,22 @@ Before proceeding, make sure you have a C++ compiler installed on your system. I
    - Alternatively, you can install the Visual Studio Build Tools from the following link: 
      [https://visualstudio.microsoft.com/visual-cpp-build-tools/](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
-3. Open a command prompt and navigate to project directory.
+3. Open the terminal and navigate to project directory.
 
-4. Run the following command to build the project for Windows:
+4. Run the following command to build the project:
    ```bash
-   python build-win-linux.py
+   python build.py
    ```
 
-Following these steps will start the build process for the respective platforms (Linux/Windows). This will build the application and generate application files along with its executable, which will be available in the project's bin directory under the name "Kids Calculator".
+This command will build the project and generate application files along with its executable. Which directory will be available in the `project/build` directory.
+
+
+### Creating Setup Installer
+
+1. Download Inno Setup from here: https://jrsoftware.org/isinfo.php
+
+2. Open the `setup.iss` file with Inno Setup.
+
+3. First, build the project and then compile it using Inno Setup.
+
+After the compilation process is complete, the installer executable will be created and placed in the `project/build` directory.

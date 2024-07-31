@@ -12,11 +12,11 @@ For a glimpse into Kids-Calculator, take a look at these simple previews:
 
 > A simple arithmetic Addition:
 
-<img src="https://github.com/davidsahani/kids-calculator/blob/main/images/addition-screenshot.png" style="height: 604px; width: 376px;"/>
+<img src="images/addition-screenshot.png"/>
 
 > A simple arithmetic Division:
 
-<img src="https://github.com/davidsahani/kids-calculator/blob/main/images/division-screenshot.png" style="height: 650px; width: 417px;"/>
+<img src="images/division-screenshot.png"/>
 
 These images showcase the intuitive interface and the comprehensive display of calculation steps, providing a clear demonstration of how Kids-Calculator brings math to life.
 
@@ -38,7 +38,7 @@ When it comes to the release builds, here's what you need to know:
   - Note: If you have a device with a different architecture, building the project yourself is required, as it is not officially supported for testing reasons.
 
 - Windows:
-  - For Windows, simply download the zip file ending with `*windows.zip.`
+  - For Windows, simply download the file ending with `*portable.zip` / `*setup.exe`.
 
 
 ### Known Issues:

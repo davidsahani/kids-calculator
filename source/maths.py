@@ -1,10 +1,9 @@
 from collections import deque
-from typing import Tuple, List
 
 from mnum import mnum
 
 
-def _add(augend: mnum, addend: mnum) -> Tuple[str, str]:
+def _add(augend: mnum, addend: mnum) -> tuple[str, str]:
     assert augend >= 0 and addend >= 0, "Both numbers must be positive"
 
     carry: int = 0
@@ -42,9 +41,6 @@ def _add(augend: mnum, addend: mnum) -> Tuple[str, str]:
     if carry == 1:  # if there's a carry
         int_result.appendleft(mnum(carry))
 
-    if not int_result:  # if empty
-        int_result.appendleft(mnum(0))
-
     result = ''.join(map(str, int_result)) + (
         '.' + ''.join(map(str, frac_result)) if frac_result else ''
     )
@@ -54,11 +50,9 @@ def _add(augend: mnum, addend: mnum) -> Tuple[str, str]:
     return result, carries
 
 
-def _sub(minuend: mnum, subtrahend: mnum, rev_sub: bool) -> Tuple[str, str]:
+def _sub(minuend: mnum, subtrahend: mnum) -> tuple[str, str]:
     assert minuend >= 0 and subtrahend >= 0, "Both numbers must be positive"
-
-    if rev_sub:
-        minuend, subtrahend = subtrahend, minuend
+    assert minuend >= subtrahend, "Minuend must be greater than or equal to subtrahend"
 
     borrow: int = 0
     int_borrows: deque[int] = deque()
@@ -72,8 +66,11 @@ def _sub(minuend: mnum, subtrahend: mnum, rev_sub: bool) -> Tuple[str, str]:
         nx = minuend.getf(idx) or mnum(0)
         ny = subtrahend.getf(idx) or mnum(0)
         res = nx - ny - borrow
-        borrow = 0 if res >= 0 else 1
-        res = res + 10 if borrow else res
+        if res < 0:
+            res += 10
+            borrow = 1
+        else:
+            borrow = 0
         frac_result.appendleft(res)
 
     # perform integer subtraction
@@ -82,14 +79,14 @@ def _sub(minuend: mnum, subtrahend: mnum, rev_sub: bool) -> Tuple[str, str]:
         nx = minuend.geti(-idx) or mnum(0)
         ny = subtrahend.geti(-idx) or mnum(0)
         res = nx - ny - borrow
-        borrow = 0 if res >= 0 else 1
-        res = res + 10 if borrow else res
+        if res < 0:
+            res += 10
+            borrow = 1
+        else:
+            borrow = 0
         int_result.appendleft(res)
 
     assert borrow == 0, "Borrow must be zero"
-
-    if not int_result:  # if empty
-        int_result.appendleft(mnum(0))
 
     result = ''.join(map(str, int_result)) + (
         '.' + ''.join(map(str, frac_result)) if frac_result else ''
@@ -100,7 +97,7 @@ def _sub(minuend: mnum, subtrahend: mnum, rev_sub: bool) -> Tuple[str, str]:
     return result, borrows
 
 
-def add(augend: mnum, addend: mnum) -> Tuple[str, str]:
+def add(augend: mnum, addend: mnum) -> tuple[str, str]:
     """Perform numeric addition
 
     Args:
@@ -120,19 +117,19 @@ def add(augend: mnum, addend: mnum) -> Tuple[str, str]:
         return '-' + res, carries
 
     # subtract, sign => 1 ; any -ve
-    rev_sub = abs_x < abs_y
     if augend == addend:
         neg_sign = False
-    elif rev_sub:
+    elif abs_x < abs_y:
+        abs_x, abs_y = abs_y, abs_x
         neg_sign = augend >= 0 and addend < 0
     else:
         neg_sign = augend < 0 and addend >= 0
 
-    res, carries = _sub(abs_x, abs_y, rev_sub)
+    res, carries = _sub(abs_x, abs_y)
     return '-' + res if neg_sign else res, carries
 
 
-def sub(subtrahend: mnum, minuend: mnum) -> Tuple[str, str]:
+def sub(subtrahend: mnum, minuend: mnum) -> tuple[str, str]:
     """Perform numeric subtraction
 
     Args:
@@ -151,19 +148,19 @@ def sub(subtrahend: mnum, minuend: mnum) -> Tuple[str, str]:
         return sym + res, carries
 
     # subtract, sign => 0 or 2 ; both +ve or both -ve
-    rev_sub = abs_x < abs_y
     if subtrahend == minuend:
         neg_sign = False
-    elif rev_sub:
+    elif abs_x < abs_y:
+        abs_x, abs_y = abs_y, abs_x
         neg_sign = subtrahend >= 0 and minuend >= 0
     else:
         neg_sign = subtrahend < 0 and minuend < 0
 
-    res, carries = _sub(abs_x, abs_y, rev_sub)
+    res, carries = _sub(abs_x, abs_y)
     return '-' + res if neg_sign else res, carries
 
 
-def mul(multiplicand: mnum, multiplier: mnum) -> Tuple[str, List[str], List[str]]:
+def mul(multiplicand: mnum, multiplier: mnum) -> tuple[str, list[str], list[str]]:
     """Perform numeric multiplication
 
     Args:
@@ -228,8 +225,6 @@ def mul(multiplicand: mnum, multiplier: mnum) -> Tuple[str, List[str], List[str]
     multiplicand_frac_len = multiplicand.frac_len()
     if multiplicand_frac_len != 0:
         frac_point = multiplicand.int_len()
-        if multiplicand.int_part() == 0:
-            frac_point += 1
         for partial_carries in carries:
             partial_carries.insert(frac_point, '.')  # type: ignore
 
@@ -246,7 +241,7 @@ def mul(multiplicand: mnum, multiplier: mnum) -> Tuple[str, List[str], List[str]
         [''.join(map(str, c)) for c in carries]
 
 
-def div(dividend: mnum, divisor: mnum) -> Tuple[str, List[mnum], List[mnum], List[mnum]]:
+def div(dividend: mnum, divisor: mnum) -> tuple[str, list[mnum], list[mnum], list[mnum]]:
     """Perform numeric integer division
 
     Args:
@@ -259,15 +254,15 @@ def div(dividend: mnum, divisor: mnum) -> Tuple[str, List[mnum], List[mnum], Lis
     assert dividend.frac_len() == 0 and divisor.frac_len() == 0, \
         "dividend and divisor must be integers"
 
-    quotient: List[str] = []
-    term_minuses: List[mnum] = []
-    minus_terms: List[mnum] = []
-    remainders: List[mnum] = []
+    quotient: list[str] = []
+    term_minuses: list[mnum] = []
+    minus_terms: list[mnum] = []
+    remainders: list[mnum] = []
     remainder: mnum = mnum(0)
 
-    is_initials_zero = True
     abs_divisor = abs(divisor)
     last_idx = len(dividend) - 1
+    is_initials_zero = last_idx != 0
 
     for idx, div_term in enumerate(dividend):
         term_minus = remainder * 10 + div_term
@@ -280,9 +275,9 @@ def div(dividend: mnum, divisor: mnum) -> Tuple[str, List[mnum], List[mnum], Lis
             if quot_div == 0 and idx != last_idx:
                 continue  # skip initial quotient zeros
             is_initials_zero = False
-        elif abs(term_minus) + abs(minus_term) < abs_divisor:
+        elif quotient and abs(term_minus) + abs(minus_term) < abs_divisor:
             quotient.append(str(abs(quot_div)))
-            continue  # skip where we get next div_term
+            continue  # skip ignorable intermediate steps
 
         quotient.append(str(abs(quot_div)))
         term_minuses.append(term_minus)
@@ -293,7 +288,7 @@ def div(dividend: mnum, divisor: mnum) -> Tuple[str, List[mnum], List[mnum], Lis
     return sign + ''.join(quotient), term_minuses, minus_terms, remainders
 
 
-def true_div(dividend: mnum, divisor: mnum, precision: int) -> Tuple[str, List[mnum], List[mnum], List[mnum]]:
+def true_div(dividend: mnum, divisor: mnum, precision: int) -> tuple[str, list[mnum], list[mnum], list[mnum]]:
     """Perform numeric integer division
 
     Args:
@@ -306,14 +301,14 @@ def true_div(dividend: mnum, divisor: mnum, precision: int) -> Tuple[str, List[m
     assert dividend.frac_len() == 0 and divisor.frac_len() == 0, \
         "dividend and divisor must be integers"
 
-    quotient: List[str] = []
-    term_minuses: List[mnum] = []
-    minus_terms: List[mnum] = []
-    remainders: List[mnum] = []
+    quotient: list[str] = []
+    term_minuses: list[mnum] = []
+    minus_terms: list[mnum] = []
+    remainders: list[mnum] = []
     remainder: mnum = mnum(0)
 
-    is_initials_zero = True
     abs_divisor = abs(divisor)
+    is_initials_zero = dividend != 0
 
     for div_term in dividend:
         term_minus = remainder * 10 + div_term
@@ -326,9 +321,9 @@ def true_div(dividend: mnum, divisor: mnum, precision: int) -> Tuple[str, List[m
             if quot_div == 0:
                 continue  # skip initial quotient zeros
             is_initials_zero = False
-        elif abs(term_minus) + abs(minus_term) < abs_divisor:
+        elif quotient and abs(term_minus) + abs(minus_term) < abs_divisor:
             quotient.append(str(abs(quot_div)))
-            continue  # skip where we get next div_term
+            continue  # skip ignorable intermediate steps
 
         quotient.append(str(abs(quot_div)))
         term_minuses.append(term_minus)
@@ -337,8 +332,6 @@ def true_div(dividend: mnum, divisor: mnum, precision: int) -> Tuple[str, List[m
 
     if remainder != 0:  # if didn't reach exact division
         quotient.append('.' if quotient else '0.')
-    elif dividend == 0:  # special case: return skipped steps
-        return '0', [mnum(0)], [mnum(0)], [mnum(0)]
 
     for _ in range(precision):
         if remainder == 0:
@@ -351,7 +344,7 @@ def true_div(dividend: mnum, divisor: mnum, precision: int) -> Tuple[str, List[m
         # avoid appending unnecessary steps
         if abs(term_minus) + abs(minus_term) < abs_divisor:
             quotient.append(str(abs(quot_div)))
-            continue  # skip where we get next div_term
+            continue  # skip ignorable intermediate steps
 
         quotient.append(str(abs(quot_div)))
         term_minuses.append(term_minus)
