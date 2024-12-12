@@ -210,7 +210,7 @@ class DisplayText:
             msg = 'division by zero is not allowed.'
             self.text_field.set_text(
                 prev_text +
-                f"\n\n\n[size={font_size -10}] [b]{msg}[/b][/size]"
+                f"\n\n\n[size={font_size - 10}] [b]{msg}[/b][/size]"
             )
             return
 
@@ -226,10 +226,10 @@ class DisplayText:
             divisor = divisor.as_int() if divisor_frac_len == 0 else \
                 divisor.as_int().add(divisor.frac_part())
 
-            if (dividend_frac_len < divisor_frac_len):  # normalize denominator
+            if dividend_frac_len < divisor_frac_len:  # normalize denominator
                 for _ in range(divisor_frac_len - dividend_frac_len):
                     dividend.join(0)
-            elif (dividend_frac_len > divisor_frac_len):  # normalize nominator
+            elif dividend_frac_len > divisor_frac_len:  # normalize nominator
                 for _ in range(dividend_frac_len - divisor_frac_len):
                     divisor.join(0)
 
@@ -243,7 +243,7 @@ class DisplayText:
                 " Step 2: Perform division"
             )
             text = '\n\n'.join(steps) + '\n'
-            self.text_field.set_text(f"[size={font_size -12}]{text}[/size]\n")
+            self.text_field.set_text(f"[size={font_size - 12}]{text}[/size]\n")
 
         if self.operator == '/':
             max_text = self.text_field.max_text_size - 6
@@ -259,17 +259,10 @@ class DisplayText:
 
         def insert(text: str) -> None:
             self.text_field.insert(
-                f"\n[size={font_size -10}] {text}[/size]"
+                f"\n[size={font_size - 10}] {text}[/size]"
             )
-        sign = (num_x < 0) + (num_y < 0)
-        quotient, *_, remainders = result
 
-        # sign == 1 means any -ve, thus sign != 1 means both +ve or -ve
-        if (sign != 1 or remainders[-1] == 0) and not has_frac_parts:
-            insert(f"\n Remainder is: {remainders[-1]}")
-            return
-
-        quot = mnum(quotient)
+        quot = mnum(result[0])
         rem = num_x - num_y * quot
         insert("\n\n Using formula: r = n - pq")
         insert(f"r = {num_x} - ({num_y} x {quot}) => {rem}")
@@ -297,7 +290,7 @@ class DisplayText:
         division_steps: list[str] = []
 
         def append(text: str) -> None:
-            division_steps.append(f"\n[size={font_size -1}]{text}[/size]")
+            division_steps.append(f"\n[size={font_size - 1}]{text}[/size]")
 
         # append the division steps
         for term_minus, minus_term, remainder in zip(term_minuses, minus_terms, remainders):

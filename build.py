@@ -4,8 +4,6 @@ import subprocess
 import sys
 from configparser import ConfigParser
 
-PROJECT_NAME = "kids-calculator"
-
 
 def parse_version(version: str) -> tuple[int, ...]:
     return tuple(map(int, (
@@ -86,6 +84,8 @@ def create_setup_installer(script_file: str, app_version: str) -> int:
 
 
 def main() -> int:
+    project_name = "kids-calculator"
+
     script_dir = os.path.dirname(__file__)  # project directory.
     source_dir = os.path.join(script_dir, "source")
     output_dir = os.path.join(script_dir, "build")
@@ -103,17 +103,16 @@ def main() -> int:
     os.environ["KIVY_NO_FILELOG"] = "1"
     os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
-    status = build(PROJECT_NAME, source_dir, output_dir)
+    status = build(project_name, source_dir, output_dir)
 
     if status != 0:
         return status  # abort build failed.
 
-    shutil.make_archive(
-        os.path.join(output_dir, f"{PROJECT_NAME}-portable"),
-        'zip', os.path.join(output_dir, PROJECT_NAME),
-    )
-
     if sys.platform == 'win32':
+        shutil.make_archive(
+            os.path.join(output_dir, f"{project_name}-portable"),
+            'zip', os.path.join(output_dir, project_name),
+        )
         return create_setup_installer("setup.iss", version)
 
     return 0  # success

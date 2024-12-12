@@ -2,7 +2,7 @@ from decimal import Decimal, getcontext
 from typing import TYPE_CHECKING, Iterator, TypeAlias
 
 if TYPE_CHECKING:
-    from _decimal import _ComparableNum, _Decimal, _DecimalNew  # type: ignore
+    from decimal import _ComparableNum, _Decimal, _DecimalNew  # type: ignore
 
 _Number: TypeAlias = 'mnum | _Decimal'
 

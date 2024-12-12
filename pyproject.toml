@@ -1,5 +1,5 @@
 [tool.pyright]
-pythonVersion = "3.10"
+requires-python = ">=3.11,<3.12"
 typeCheckingMode = "strict"
 exclude = ["**/build", "**/__pycache__"]
 
